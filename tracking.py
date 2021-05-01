@@ -8,6 +8,8 @@ cap = cv2.VideoCapture(0)
 detector = HandDetector(max_hands=1, track_con=0.85)
 trMouse = mouse.Controller()
 
+trackMode = False
+
 xp, yp = 0, 0
 
 # initialize accumulated weight

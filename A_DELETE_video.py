@@ -1,3 +1,4 @@
+from collections import deque
 import numpy as np
 import cv2
 import time
@@ -16,6 +17,8 @@ quietMode = False
 img_rows, img_cols = 64, 64
 font = cv2.FONT_HERSHEY_SIMPLEX
 width, height = 640, 480
+
+Q = deque(maxlen=4)
 
 if __name__ == "__main__":
     # load saved model from config path
@@ -88,16 +91,15 @@ if __name__ == "__main__":
             train_set -= np.mean(train_set)
             train_set /= np.max(train_set)
             result = model.predict(train_set)
-            # print(result)
-            num = np.argmax(result, axis=1)
-            print(classes[int(num[0])], result)
+            Q.append(result)
+            num = np.argmax(np.array(Q).mean(axis=0))
+            instruction = classes[int(num)]
+            print(instruction, classes[int(np.argmax(result))])
             input = []
             pre = int(num)
 
-            controls.do_control(pre)
+        cv2.putText(frame, instruction, (450, 50), font, 0.7, (0, 255, 0), 2, 1)
 
-
-        # cv2.putText(frame, instruction, (450, 50), font, 0.7, (0, 255, 0), 2, 1)
         if not quietMode:
             cv2.imshow('Original', frame)
         key = cv2.waitKey(1) & 0xFF

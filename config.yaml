@@ -1,0 +1,11 @@
+modelpath: "./saved_model/3DCNN+3LSTM_64_6_jester"
+quietMode: No
+csvpath:
+  - labels:
+      path: "./csv/jester-v1-labels.csv"
+  - train:
+      path: "./csv/jester-v1-train.csv"
+  - test:
+      path: "./csv/jester-v1-test.csv"
+  - validation:
+      path: "./csv/jester-v1-validation.csv"
