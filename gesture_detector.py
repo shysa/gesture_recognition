@@ -62,4 +62,4 @@ class GestureDetector:
             self.frames = []
             input = []
 
-            return prediction[0][class_num], instruction
+            return prediction[0][class_num], instruction, class_num

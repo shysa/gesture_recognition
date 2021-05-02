@@ -1,17 +1,25 @@
 import cv2
 import tensorflow as tf
 import controls
-import gesture_detector
+from gesture_detector import GestureDetector, config
+from hand_detector import HandDetector
+from pynput import mouse
 
 physical_devices = tf.config.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
 if __name__ == "__main__":
-    recognizer = gesture_detector.GestureDetector()
+    recognizer = GestureDetector()
     recognizer.get_classes()
+
+    detector = HandDetector(max_hands=1, track_con=0.85)
+    trMouse = mouse.Controller()
 
     confidence = 0.0
     gesture = ""
+    gesture_index = 2
+
+    xp, yp = 0, 0
 
     # capture video from USB web-camera
     cap = cv2.VideoCapture(0)
@@ -23,12 +31,13 @@ if __name__ == "__main__":
 
         result = recognizer.find_gesture(frame)
         if result is not None:
-            (confidence, gesture) = result
+            (confidence, gesture, gesture_index) = result
             print(gesture)
+            controls.do_control(gesture_index)
 
         controls.print_recognition_text(confidence, gesture, frame)
 
-        if not gesture_detector.config.get("quietMode"):
+        if not config.get("quietMode"):
             cv2.imshow("Original", frame)
 
         # use ESC key to close the program
