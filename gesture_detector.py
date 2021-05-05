@@ -24,7 +24,7 @@ class GestureDetector:
 
     def get_classes(self):
         # TODO: parse csv
-        self.classes = ["Swipe Left", "Swipe Right", "No gesture"]
+        self.classes = ["No gesture", "Sliding Two Fingers Down", "Sliding Two Fingers Up", "Swipe Left", "Swipe Right"]
         self.num_classes = len(self.classes)
 
     def find_gesture(self, frame):

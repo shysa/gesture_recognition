@@ -1,4 +1,4 @@
-modelpath: "./saved_model/3DCNN+3LSTM_64_6_jester"
+modelpath: "./model/model"
 quietMode: No
 csvpath:
   - labels:

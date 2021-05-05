@@ -2,6 +2,7 @@ import cv2
 from hand_detector import HandDetector
 from pynput import mouse, keyboard
 
+
 trKeyboard = keyboard.Controller()
 trMouse = mouse.Controller()
 detector = HandDetector(max_hands=1, track_con=0.85)
@@ -21,14 +22,37 @@ def do_control(index):
     command_counter = (command_counter + 1) % 2
 
     if command_counter == 1:
-        if index == 0:
-            # trKeyboard.press(keyboard.Key.alt)
-            # trKeyboard.press(keyboard.Key.tab)
-            # trKeyboard.release(keyboard.Key.alt)
-            # trKeyboard.release(keyboard.Key.tab)
-            print("Command 1")
+        # Gesture: Swiping Left
+        # Action: open prev tab
+        if index == 3:
+            trKeyboard.press(keyboard.Key.ctrl)
+            trKeyboard.press(keyboard.Key.shift)
+            trKeyboard.press(keyboard.Key.tab)
+            trKeyboard.release(keyboard.Key.ctrl)
+            trKeyboard.release(keyboard.Key.shift)
+            trKeyboard.release(keyboard.Key.tab)
+
+        # Gesture: Swiping Right
+        # Action: open next tab
+        elif index == 4:
+            trKeyboard.press(keyboard.Key.ctrl)
+            trKeyboard.press(keyboard.Key.tab)
+            trKeyboard.release(keyboard.Key.ctrl)
+            trKeyboard.release(keyboard.Key.tab)
+
+        # Gesture: Sliding Two Fingers Up
+        # Action: scroll down a frame
+        elif index == 2:
+            trKeyboard.press(keyboard.Key.space)
+            trKeyboard.release(keyboard.Key.space)
+
+        # Gesture: Sliding Two Fingers Down
+        # Action: scroll up a frame
         elif index == 1:
-            print("Command 2")
+            trKeyboard.press(keyboard.Key.shift)
+            trKeyboard.press(keyboard.Key.space)
+            trKeyboard.release(keyboard.Key.shift)
+            trKeyboard.release(keyboard.Key.space)
 
 
 #
@@ -51,4 +75,3 @@ def track_mouse(frame):
         x, y = (xp - cx) * 4, (cy - yp) * 3.5
         trMouse.move(x, y)
         xp, yp = cx, cy
-

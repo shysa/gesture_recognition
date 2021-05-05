@@ -2,8 +2,6 @@ import cv2
 import tensorflow as tf
 import controls
 from gesture_detector import GestureDetector, config
-from hand_detector import HandDetector
-from pynput import mouse
 
 physical_devices = tf.config.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
@@ -11,9 +9,6 @@ tf.config.experimental.set_memory_growth(physical_devices[0], True)
 if __name__ == "__main__":
     recognizer = GestureDetector()
     recognizer.get_classes()
-
-    detector = HandDetector(max_hands=1, track_con=0.85)
-    trMouse = mouse.Controller()
 
     confidence = 0.0
     gesture = ""
