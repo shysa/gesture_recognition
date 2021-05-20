@@ -11,7 +11,7 @@ font = cv2.FONT_HERSHEY_SIMPLEX
 width, height = 640, 480
 
 # define deque Q to stabilize predictions from recognizer
-Q = deque(maxlen=2)
+Q = deque(maxlen=1)
 
 
 class GestureDetector:
@@ -27,7 +27,7 @@ class GestureDetector:
         self.classes = ["No gesture", "Sliding Two Fingers Down", "Sliding Two Fingers Up", "Swipe Left", "Swipe Right"]
         self.num_classes = len(self.classes)
 
-    def find_gesture(self, frame):
+    def find_gesture(self, frame, full_pred=False):
         img = cv2.resize(frame, (width, height))
 
         # image decimation with resampling using pixel area relation
@@ -62,4 +62,10 @@ class GestureDetector:
             self.frames = []
             input = []
 
-            return prediction[0][class_num], instruction, class_num
+            if full_pred:
+                return prediction[0], instruction, class_num
+            else:
+                return prediction[0][class_num], instruction, class_num
+
+    def clean_frames(self):
+        self.frames = []

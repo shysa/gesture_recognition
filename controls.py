@@ -1,27 +1,28 @@
 import cv2
-from hand_detector import HandDetector
 from pynput import mouse, keyboard
-
 
 trKeyboard = keyboard.Controller()
 trMouse = mouse.Controller()
-detector = HandDetector(max_hands=1, track_con=0.85)
+
 xp, yp = 0, 0
-track_mode = False
-command_counter = 0
+
+prev_command = -1
 
 
 def print_recognition_text(confidence, gesture, img):
-    cv2.putText(img, 'confidence: ' + str(confidence), (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2, 1)
-    cv2.putText(img, 'gesture: ' + gesture, (10, 75), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2, 1)
+    cv2.putText(img, 'Gesture: ' + gesture, (10, 40), cv2.FONT_HERSHEY_DUPLEX, 0.9, (216, 180, 0), 1, 1)
+    cv2.putText(img, 'Confidence: ' + str(confidence[0]), (10, 70), cv2.FONT_HERSHEY_DUPLEX, 0.9, (216, 180, 0), 1, 1)
+
+
+def print_text(text, img):
+    cv2.putText(img, text, (10, 40), cv2.FONT_HERSHEY_DUPLEX, 0.9, (216, 180, 0), 1, 1)
 
 
 def do_control(index):
-    global track_mode, command_counter
+    global prev_command
 
-    command_counter = (command_counter + 1) % 2
-
-    if command_counter == 1:
+    # do only the first recognized gesture
+    if prev_command != index or prev_command == 10:
         # Gesture: Swiping Left
         # Action: open prev tab
         if index == 3:
@@ -54,17 +55,16 @@ def do_control(index):
             trKeyboard.release(keyboard.Key.shift)
             trKeyboard.release(keyboard.Key.space)
 
+        # Gesture and action: Mouse click
+        elif index == 10:
+            trMouse.press(mouse.Button.left)
+            trMouse.release(mouse.Button.left)
 
-#
-# Ignore this function
-# ! Not used because there are problems with
-#   hand tracking and gesture recognition concurrently
-#
-def track_mouse(frame):
+    prev_command = index
+
+
+def move_mouse(lmList, k):
     global xp, yp
-
-    frame = detector.find(frame, draw=False)
-    lmList = detector.find_points(frame)
 
     if len(lmList) != 0:
         cx, cy = lmList[8][1], lmList[8][2]
@@ -72,6 +72,10 @@ def track_mouse(frame):
         if xp == 0 and yp == 0:
             xp, xy = cx, cy
 
-        x, y = (xp - cx) * 4, (cy - yp) * 3.5
-        trMouse.move(x, y)
-        xp, yp = cx, cy
+        if abs(xp - cx) > 4:
+            xp = cx
+        if abs(yp - cy) > 4:
+            yp = cy
+
+        x, y = xp * k[0], yp * k[1]
+        trMouse.position = (x, y)
