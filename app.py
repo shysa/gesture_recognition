@@ -6,6 +6,7 @@ import tensorflow as tf
 import os
 import controls
 from gesture_detector import GestureDetector
+from collections import deque
 from hand_detector import HandDetector
 
 
@@ -78,7 +79,7 @@ def main():
     # ------------------------------------------
     camera = cv2.VideoCapture(0)
 
-    recognizer = GestureDetector()
+    recognizer = GestureDetector(stab=deque(maxlen=120))
     recognizer.get_classes()
     gesture_index = 0
 
@@ -98,15 +99,15 @@ def main():
     with col1:
         FRAME_WINDOW.image('./app/stop_camera.png')
 
-        msg = st.text("")
-        action = st.text("")
+        msg = st.empty()
+        action = st.empty()
 
         if start:
             while True:
                 # get the frame and show it
                 _, frame = camera.read()
+                frame = cv2.flip(frame, 1)
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                FRAME_WINDOW.image(cv2.flip(frame, 1))
 
                 if control_allow == "Нет, только распознавание":
                     result = recognizer.find_gesture(frame, full_pred=True)
@@ -168,22 +169,24 @@ def main():
                             else:
                                 action.text("Клик")
 
-                            cv2.circle(img, (click_target_x, click_target_y), 10, (91, 94, 255), cv2.FILLED)
-                            cv2.circle(img, (thumb_x, thumb_y), 10, (91, 94, 255), cv2.FILLED)
+                            cv2.circle(frame, (click_target_x, click_target_y), 10, (91, 94, 255), cv2.FILLED)
+                            cv2.circle(frame, (thumb_x, thumb_y), 10, (91, 94, 255), cv2.FILLED)
 
                         # draw cursor point on index finger and for click
                         index_x, index_y = lmlist[8][1], lmlist[8][2]
-                        cv2.circle(img, (index_x, index_y), 5, (91, 94, 255), cv2.FILLED)
+                        cv2.circle(frame, (index_x, index_y), 5, (91, 94, 255), cv2.FILLED)
 
-                        cv2.circle(img, (click_target_x, click_target_y), 10, (91, 94, 255), thickness=1)
-                        cv2.circle(img, (thumb_x, thumb_y), 10, (91, 94, 255), thickness=1)
-                        cv2.line(img, (click_target_x, click_target_y), (thumb_x, thumb_y), (91, 94, 255), thickness=1)
+                        cv2.circle(frame, (click_target_x, click_target_y), 10, (91, 94, 255), thickness=1)
+                        cv2.circle(frame, (thumb_x, thumb_y), 10, (91, 94, 255), thickness=1)
+                        cv2.line(frame, (click_target_x, click_target_y), (thumb_x, thumb_y), (91, 94, 255), thickness=1)
 
                         controls.move_mouse(lmlist, k)
                         msg.text("Включен режим мыши")
 
                     else:
                         if skipped_frames >= 20:
+                            msg.text("Включен режим распознавания")
+
                             # get results of model prediction
                             result = recognizer.find_gesture(frame, full_pred=True)
 
@@ -192,16 +195,14 @@ def main():
 
                                 if control_allow == "Полный доступ":
                                     controls.do_control(gesture_index)
-                                else:
-                                    action.text("Действие для " + CLASSES[gesture_index])
 
                                 # update confidence results
                                 draw_recognition_results(table, plot, fig, ax, confidence, result_view_select)
-                            else:
-                                msg.text("Включается режим распознавания, подождите")
 
-                    if stop:
-                        break
+                FRAME_WINDOW.image(frame)
+
+                if stop:
+                    break
 
         camera.release()
 

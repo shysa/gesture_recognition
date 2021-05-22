@@ -10,17 +10,17 @@ img_rows, img_cols = 64, 64
 font = cv2.FONT_HERSHEY_SIMPLEX
 width, height = 640, 480
 
-# define deque Q to stabilize predictions from recognizer
-Q = deque(maxlen=3)
-
 
 class GestureDetector:
-    def __init__(self):
+    def __init__(self, stab=deque(maxlen=3)):
         self.quiet_mode = config['quietMode']
         self.model_path = config['modelpath']
         self.model = load_model(self.model_path)
         self.csv_paths = config['csvpath']
         self.frames = []
+
+        # define deque Q to stabilize predictions from recognizer
+        self.Q = stab
 
     def get_classes(self):
         # TODO: parse csv
@@ -53,9 +53,9 @@ class GestureDetector:
             prediction = self.model.predict(train_set)
 
             # stabilize prediction
-            Q.append(prediction)
+            self.Q.append(prediction)
 
-            class_num = np.argmax(np.array(Q).mean(axis=0), axis=1)
+            class_num = np.argmax(np.array(self.Q).mean(axis=0), axis=1)
             instruction = self.classes[int(class_num)]
 
             # clean arrays
@@ -69,4 +69,4 @@ class GestureDetector:
 
     def clean_frames(self):
         self.frames = []
-        Q.clear()
+        self.Q.clear()
