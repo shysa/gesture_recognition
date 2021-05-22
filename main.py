@@ -94,8 +94,8 @@ if __name__ == "__main__":
             controls.print_text("Mouse mode enabled", frame)
 
         else:
-            if skipped_frames >= 20:
-                result = recognizer.find_gesture(frame)
+            if skipped_frames >= 25:
+                result = recognizer.find_gesture(cv2.flip(frame, 1))
                 if result is not None:
                     (confidence, gesture, gesture_index) = result
                     print(gesture)

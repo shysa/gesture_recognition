@@ -11,7 +11,7 @@ font = cv2.FONT_HERSHEY_SIMPLEX
 width, height = 640, 480
 
 # define deque Q to stabilize predictions from recognizer
-Q = deque(maxlen=1)
+Q = deque(maxlen=3)
 
 
 class GestureDetector:
@@ -69,3 +69,4 @@ class GestureDetector:
 
     def clean_frames(self):
         self.frames = []
+        Q.clear()
