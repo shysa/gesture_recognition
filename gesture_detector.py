@@ -7,8 +7,43 @@ import yaml
 config = yaml.safe_load(open("./config.yaml"))
 
 img_rows, img_cols = 64, 64
-font = cv2.FONT_HERSHEY_SIMPLEX
 width, height = 640, 480
+
+
+def find_static_gesture(lmlist):
+    first_x, first_y = lmlist[8][1], lmlist[8][2]
+    sec_x, sec_y = lmlist[12][1], lmlist[12][2]
+    third_x, third_y = lmlist[16][1], lmlist[16][2]
+    fourth_x, fourth_y = lmlist[20][1], lmlist[20][2]
+
+    flag1 = False
+    flag2 = False
+    flag3 = False
+    flag4 = False
+
+    if abs(first_x - lmlist[5][1]) <= 30 and abs(first_y - lmlist[5][2]) <= 30:
+        flag1 = True
+    if abs(sec_x - lmlist[9][1]) <= 30 and abs(sec_y - lmlist[9][2]) <= 30:
+        flag2 = True
+    if abs(third_x - lmlist[13][1]) <= 30 and abs(third_y - lmlist[13][2]) <= 30:
+        flag3 = True
+    if abs(fourth_x - lmlist[17][1]) <= 30 and abs(fourth_y - lmlist[17][2]) <= 30:
+        flag4 = True
+
+    if flag1 and flag2 and flag3 and flag4:
+        return True
+
+
+def find_click(lmlist):
+    thumb_x, thumb_y = lmlist[4][1], lmlist[4][2]
+    click_target_x, click_target_y = lmlist[5][1], lmlist[5][2]
+
+    got_it = False
+
+    if abs(thumb_x - click_target_x) <= 30 and abs(thumb_y - click_target_y) <= 30:
+        got_it = True
+
+    return got_it, click_target_x, click_target_y, thumb_x, thumb_y
 
 
 class GestureDetector:

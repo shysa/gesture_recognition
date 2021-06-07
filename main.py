@@ -2,7 +2,7 @@ import os
 import cv2
 import tensorflow as tf
 import controls
-from gesture_detector import GestureDetector, config
+from gesture_detector import GestureDetector, config, find_static_gesture, find_click
 from hand_detector import HandDetector
 
 physical_devices = tf.config.list_physical_devices('GPU')
@@ -40,44 +40,24 @@ if __name__ == "__main__":
         lmlist = detector.find_points(img)
 
         if len(lmlist) != 0:
-            first_x, first_y = lmlist[8][1], lmlist[8][2]
-            sec_x, sec_y = lmlist[12][1], lmlist[12][2]
-            third_x, third_y = lmlist[16][1], lmlist[16][2]
-            fourth_x, fourth_y = lmlist[20][1], lmlist[20][2]
+            # check gesture for mouse mode ON
+            mouse_on = find_static_gesture(lmlist)
 
-            flag1 = False
-            flag2 = False
-            flag3 = False
-            flag4 = False
-
-            if abs(first_x - lmlist[5][1]) <= 30 and abs(first_y - lmlist[5][2]) <= 30:
-                flag1 = True
-            if abs(sec_x - lmlist[9][1]) <= 30 and abs(sec_y - lmlist[9][2]) <= 30:
-                flag2 = True
-            if abs(third_x - lmlist[13][1]) <= 30 and abs(third_y - lmlist[13][2]) <= 30:
-                flag3 = True
-            if abs(fourth_x - lmlist[17][1]) <= 30 and abs(fourth_y - lmlist[17][2]) <= 30:
-                flag4 = True
-
-            if flag1 and flag2 and flag3 and flag4:
+            if mouse_on:
                 mouse_mode = True
                 skipped_frames = 0
                 recognizer.clean_frames()
 
         else:
+            # some pause for recognizer after mouse mode off
             mouse_mode = False
             skipped_frames += 1
 
         if mouse_mode:
-            # get some coords for CLICK checking
-            thumb_x, thumb_y = lmlist[4][1], lmlist[4][2]
-            click_target_x, click_target_y = lmlist[5][1], lmlist[5][2]
+            # check click gesture
+            (get_click, click_target_x, click_target_y, thumb_x, thumb_y) = find_click(lmlist)
 
-            click_x = abs(thumb_x - click_target_x)
-            click_y = abs(thumb_y - click_target_y)
-
-            # and do click
-            if click_x <= 30 and click_y <= 30:
+            if get_click:
                 controls.do_control(10)
                 cv2.circle(img, (click_target_x, click_target_y), 10, (91, 94, 255), cv2.FILLED)
                 cv2.circle(img, (thumb_x, thumb_y), 10, (91, 94, 255), cv2.FILLED)
@@ -94,11 +74,12 @@ if __name__ == "__main__":
             controls.print_text("Mouse mode enabled", frame)
 
         else:
+            # start recognize gestures after mouse mode off and 25 frames
             if skipped_frames >= 25:
                 result = recognizer.find_gesture(cv2.flip(frame, 1))
+
                 if result is not None:
                     (confidence, gesture, gesture_index) = result
-                    print(gesture)
                     controls.do_control(gesture_index)
 
                 controls.print_recognition_text(confidence, gesture, frame)
